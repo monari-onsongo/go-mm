@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/narie-monarie/go-mpesa/config"
+	"github.com/monari-onsongo/go-mm/config"
 )
 
 func main() {

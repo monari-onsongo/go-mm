@@ -1,3 +1,3 @@
-module github.com/narie-monarie/go-mpesa
+module github.com/monari-onsongo/go-mm
 
 go 1.22.2
