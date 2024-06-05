@@ -1,4 +1,4 @@
-package config
+package mpesa
 
 import (
 	"encoding/base64"
@@ -12,19 +12,18 @@ type Config struct {
 	ConsumerSecret string
 }
 
-func NewConfig(passKey, consumerKey, consumerSecret string) *Config {
+func NewConfig(consumerKey, consumerSecret string) *Config {
 	return &Config{
-		PassKey:        passKey,
 		ConsumerKey:    consumerKey,
 		ConsumerSecret: consumerSecret,
 	}
 }
 
-func (c *Config) getPassKey() string {
-	return c.PassKey
+func (c *Config) SetPassKey(passKey string) {
+	c.PassKey = passKey
 }
 
-func (c *Config) getAuth() (string, error) {
+func (c *Config) GetAuth() (string, error) {
 	url := "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
 	authorizationString := base64.StdEncoding.EncodeToString([]byte(c.ConsumerKey + ":" + c.ConsumerSecret))
 

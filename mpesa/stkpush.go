@@ -1,8 +1,7 @@
-package config
+package mpesa
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,13 +9,21 @@ import (
 	"time"
 )
 
-type RequestData struct {
-	PhoneNumber int `json:"phone_number"`
-	Amount      int `json:"amount"`
+type STKPushRequest struct {
+	BusinessShortCode string
+	Password          string
+	TransactionType   string
+	Amount            string
+	PartyA            string
+	PartyB            string
+	PhoneNumber       string
+	CallBackURL       string
+	AccountReference  string
+	TransactionDesc   string
 }
 
-func (c *Config) GetSTKPUSH(w http.ResponseWriter, r *http.Request) {
-	accessToken, err := c.getAuth()
+func (c *Config) MPESAExpress(params STKPushRequest, w http.ResponseWriter, r *http.Request) {
+	accessToken, err := c.GetAuth()
 	if err != nil {
 		http.Error(w, "Error getting access token", http.StatusInternalServerError)
 		return
@@ -27,47 +34,33 @@ func (c *Config) GetSTKPUSH(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requestData RequestData
-	err = json.NewDecoder(r.Body).Decode(&requestData)
-	if err != nil {
-		http.Error(w, "Error parsing request body", http.StatusBadRequest)
-		return
-	}
-
-	phoneNumber := requestData.PhoneNumber
-	amount := requestData.Amount
-
 	url := "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
-
-	businessShortCode := 174379
-	partyA := phoneNumber
-	partyB := 174379
 
 	now := time.Now()
 	timestamp := fmt.Sprintf("%d%02d%02d%02d%02d%02d",
 		now.Year(),
-		now.Month(),
+		int(now.Month()),
 		now.Day(),
 		now.Hour(),
 		now.Minute(),
 		now.Second(),
 	)
 
-	password := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%d%s%s", businessShortCode, c.getPassKey(), timestamp)))
+	password := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s%s%s", params.BusinessShortCode, c.PassKey, timestamp)))
 
 	payload := strings.NewReader(fmt.Sprintf(`{
-		"BusinessShortCode": %d,
+		"BusinessShortCode": "%s",
 		"Password": "%s",
 		"Timestamp": "%s",
-		"TransactionType": "CustomerPayBillOnline",
-		"Amount": %d,
-		"PartyA": %d,
-		"PartyB": %d,
-		"PhoneNumber": %d,
-		"CallBackURL": "",
-		"AccountReference": "CompanyXLTD",
-		"TransactionDesc": "Payment of Boogs"
-	}`, businessShortCode, password, timestamp, amount, partyA, partyB, phoneNumber))
+		"TransactionType": "%s",
+		"Amount": "%s",
+		"PartyA": "%s",
+		"PartyB": "%s",
+		"PhoneNumber": "%s",
+		"CallBackURL": "%s",
+		"AccountReference": "%s",
+		"TransactionDesc": "%s"
+	}`, params.BusinessShortCode, password, timestamp, params.TransactionType, params.Amount, params.PartyA, params.PartyB, params.PhoneNumber, params.CallBackURL, params.AccountReference, params.TransactionDesc))
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", url, payload)
