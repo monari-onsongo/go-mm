@@ -7,20 +7,17 @@ import (
 )
 
 type Config struct {
-	PassKey        string
 	ConsumerKey    string
 	ConsumerSecret string
+	PassKey        string
 }
 
-func NewConfig(consumerKey, consumerSecret string) *Config {
+func NewConfig(config Config) *Config {
 	return &Config{
-		ConsumerKey:    consumerKey,
-		ConsumerSecret: consumerSecret,
+		ConsumerKey:    config.ConsumerKey,
+		ConsumerSecret: config.ConsumerSecret,
+		PassKey:        config.PassKey,
 	}
-}
-
-func (c *Config) SetPassKey(passKey string) {
-	c.PassKey = passKey
 }
 
 func (c *Config) GetAuth() (string, error) {

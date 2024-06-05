@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
+// STKPushRequest represents the parameters for an STK push request.
 type STKPushRequest struct {
 	BusinessShortCode string
-	Password          string
 	TransactionType   string
 	Amount            string
 	PartyA            string
@@ -22,6 +22,7 @@ type STKPushRequest struct {
 	TransactionDesc   string
 }
 
+// MPESAExpress performs an MPESA Express (STK Push) request.
 func (c *Config) MPESAExpress(params STKPushRequest, w http.ResponseWriter, r *http.Request) {
 	accessToken, err := c.GetAuth()
 	if err != nil {
@@ -33,8 +34,6 @@ func (c *Config) MPESAExpress(params STKPushRequest, w http.ResponseWriter, r *h
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
-	url := "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
 
 	now := time.Now()
 	timestamp := fmt.Sprintf("%d%02d%02d%02d%02d%02d",
@@ -63,7 +62,7 @@ func (c *Config) MPESAExpress(params STKPushRequest, w http.ResponseWriter, r *h
 	}`, params.BusinessShortCode, password, timestamp, params.TransactionType, params.Amount, params.PartyA, params.PartyB, params.PhoneNumber, params.CallBackURL, params.AccountReference, params.TransactionDesc))
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", url, payload)
+	req, err := http.NewRequest("POST", "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest", payload)
 	if err != nil {
 		panic(err)
 	}
